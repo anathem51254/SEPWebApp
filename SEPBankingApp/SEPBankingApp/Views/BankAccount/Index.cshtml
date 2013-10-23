@@ -1,0 +1,51 @@
+﻿@model IEnumerable<SEPBankingApp.Models.BankAccount>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.AccountNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TransactionHistoryNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AccountType)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CurrentBalance)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.AccountNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TransactionHistoryNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AccountType)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CurrentBalance)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.AccountNumber }) |
+            @Html.ActionLink("TransactionHistory", "Transactionhistory", new { id=item.AccountNumber }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.AccountNumber })
+        </td>
+    </tr>
+}
+
+</table>

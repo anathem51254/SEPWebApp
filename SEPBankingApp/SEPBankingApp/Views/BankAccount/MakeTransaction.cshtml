@@ -1,0 +1,64 @@
+﻿@model SEPBankingApp.Models.TransactionHistory
+
+@{
+    ViewBag.Title = "MakeTransaction";
+}
+
+<h2>MakeTransaction</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset class="form-horizontal">
+        <legend>TransactionHistoryItem</legend>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.AccountNumber, new { @class = "control-label" })
+            <div class="controls">
+                @Html.DropDownListFor(model => model.AccountNumber, (SelectList)ViewBag.BankAccountNumbersList)
+                @*@Html.EditorFor(model => model.AccountNumber)
+                @Html.ValidationMessageFor(model => model.AccountNumber, null, new { @class = "help-block" })*@
+            </div>
+        </div>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.DestinationAccountNumber, new { @class = "control-label" })
+            <div class="controls">
+                @Html.EditorFor(model => model.DestinationAccountNumber)
+                @Html.ValidationMessageFor(model => model.DestinationAccountNumber, null, new { @class = "help-block" })
+            </div>
+        </div>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.TransactionDateTime, new { @class = "control-label" })
+            <div class="controls">
+                @Html.TextAreaFor(model => model.TransactionDateTime, new { @class = "jquery_datepicker", @value = "dd/MM/YYYY" } )
+                @*@Html.EditorFor(model => model.TransactionDateTime)
+                @Html.ValidationMessageFor(model => model.TransactionDateTime, null, new { @class = "help-block" })*@
+            </div>
+        </div>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.TransactionAmount, new { @class = "control-label" })
+            <div class="controls">
+                @Html.EditorFor(model => model.TransactionAmount)
+                @Html.ValidationMessageFor(model => model.TransactionAmount, null, new { @class = "help-block" })
+            </div>
+        </div>
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Create" class="btn" />
+        </div>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "TransactionHistory")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+

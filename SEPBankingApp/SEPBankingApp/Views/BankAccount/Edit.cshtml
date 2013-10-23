@@ -1,0 +1,65 @@
+﻿@model SEPBankingApp.Models.BankAccount
+
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit</h2>
+
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset class="form-horizontal">
+        <legend>BankAccountModel</legend>
+
+        @Html.HiddenFor(model => model.AccountNumber)
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.UserName, new { @class = "control-label" })
+            <div class="controls">
+                @Html.EditorFor(model => model.UserName)
+                @Html.ValidationMessageFor(model => model.UserName, null, new { @class = "help-block" })
+            </div>
+        </div>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.TransactionHistoryNumber, new { @class = "control-label" })
+            <div class="controls">
+                @Html.EditorFor(model => model.TransactionHistoryNumber)
+                @Html.ValidationMessageFor(model => model.TransactionHistoryNumber, null, new { @class = "help-block" })
+            </div>
+        </div>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.AccountType, new { @class = "control-label" })
+            <div class="controls">
+                @Html.EditorFor(model => model.AccountType)
+                @Html.ValidationMessageFor(model => model.AccountType, null, new { @class = "help-block" })
+            </div>
+        </div>
+
+        <div class="from-group">
+            @Html.LabelFor(model => model.CurrentBalance, new { @class = "control-label" })
+            <div class="controls">
+                @Html.EditorFor(model => model.CurrentBalance)
+                @Html.ValidationMessageFor(model => model.CurrentBalance, null, new { @class = "help-block" })
+            </div>
+        </div>
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Save" class="btn" />
+        </div>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+

@@ -151,6 +151,11 @@ ClientBin/
 *.pfx
 *.publishsettings
 
+# Database
+*.ldf
+*.mdf
+*.access
+
 # RIA/Silverlight projects
 Generated_Code/
 

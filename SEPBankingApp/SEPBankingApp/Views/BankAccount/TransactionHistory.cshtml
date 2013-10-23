@@ -1,0 +1,52 @@
+﻿@model IEnumerable<SEPBankingApp.Models.TransactionHistory>
+
+@{
+    ViewBag.Title = "TransactionHistory";
+}
+
+<h2>TransactionHistory</h2>
+
+<p>
+    @Html.ActionLink("Make Transaction", "MakeTransaction")
+</p>
+<table class="table">
+    <tr>
+        @*<th>
+            @Html.DisplayNameFor(model => model.AccountNumber)
+        </th>*@
+        <th>
+            @Html.DisplayNameFor(model => model.DestinationAccountNumber)
+        </th>
+       
+        <th>
+            @Html.DisplayNameFor(model => model.TransactionAmount)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TransactionDateTime)
+        </th>
+        <th></th>
+    </tr>
+@if (Model != null) { 
+    foreach (var item in Model) {
+        <tr>
+            @*<td>
+                @Html.DisplayFor(modelItem => item.AccountNumber)
+            </td>*@
+            <td>
+                @Html.DisplayFor(modelItem => item.DestinationAccountNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TransactionAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TransactionDateTime)
+            </td>
+            @*<td>
+                @Html.ActionLink("Edit", "Edit", new { id=item.TransactionId }) |
+                @Html.ActionLink("Details", "Details", new { id=item.TransactionId }) |
+                @Html.ActionLink("Delete", "Delete", new { id=item.TransactionId })
+            </td>*@
+        </tr>
+    }
+}
+</table>
