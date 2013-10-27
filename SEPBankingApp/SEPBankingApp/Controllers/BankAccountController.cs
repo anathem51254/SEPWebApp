@@ -99,7 +99,11 @@ namespace SEPBankingApp.Controllers
 
             ViewBag.BankAccountNumbersList = new SelectList(BankAccountDetails, "AccountNumber", "AccountNumber");
 
-            return View();
+            TransactionHistory model = new TransactionHistory();
+
+            model.TransactionDateTime = DateTime.Today.Date;
+
+            return View(model);
         }
 
         // POST: /BankAccount/MakeTransaction
@@ -124,6 +128,27 @@ namespace SEPBankingApp.Controllers
                 BankAccount AccToWithdraw = AccountsToWithdraw.FirstOrDefault();
                 BankAccount AccToDeposit = AccountsToDeposit.FirstOrDefault();
 
+                if (AccToWithdraw == null || AccToDeposit == null)
+                {
+                    var BankAccountDetails = from tb in db.BankAccounts
+                                             select tb;
+
+                    string userid = User.Identity.GetUserId();
+                    BankAccountDetails = BankAccountDetails.Where(s => s.UserId.Equals(userid));
+
+                    ViewBag.BankAccountNumbersList = new SelectList(BankAccountDetails, "AccountNumber", "AccountNumber");
+
+                    return View(transHistory);
+                }
+
+                TransactionHistory AccHistory = new Models.TransactionHistory();
+
+                AccHistory.AccountNumber = transHistory.DestinationAccountNumber;
+                AccHistory.DestinationAccountNumber = transHistory.AccountNumber;
+                AccHistory.TransactionAmount = transHistory.TransactionAmount;
+                AccHistory.TransactionDateTime = transHistory.TransactionDateTime;
+                AccHistory.PreBalance = AccToDeposit.CurrentBalance;
+
                 transHistory.PreBalance = AccToWithdraw.CurrentBalance;
                 Debug.WriteLine("Withdraw Acc Pre Balance: " + AccToWithdraw.CurrentBalance.ToString());
 
@@ -135,18 +160,32 @@ namespace SEPBankingApp.Controllers
                 AccToDeposit.CurrentBalance += transHistory.TransactionAmount;
                 Debug.WriteLine("Deposit Acc Post Balance: " + AccToDeposit.CurrentBalance.ToString());
 
+                AccHistory.PostBalance = AccToDeposit.CurrentBalance;
+
+                transHistory.PostBalance = AccToWithdraw.CurrentBalance;
+
                 db.Entry(AccToWithdraw).State = EntityState.Modified;
                 db.SaveChanges();
 
                 db.Entry(AccToDeposit).State = EntityState.Modified;
                 db.SaveChanges();
 
-                transHistory.PostBalance = AccToWithdraw.CurrentBalance;
+                db.TransactionHistorys.Add(AccHistory);
+                db.SaveChanges();
 
                 db.TransactionHistorys.Add(transHistory);
                 db.SaveChanges();
+                
                 return RedirectToAction("TransactionHistory", new { id = transHistory.AccountNumber });
             }
+
+            var GetBankAccountDetails = from tb in db.BankAccounts
+                                     select tb;
+
+            string Getuserid = User.Identity.GetUserId();
+            GetBankAccountDetails = GetBankAccountDetails.Where(s => s.UserId.Equals(Getuserid));
+
+            ViewBag.BankAccountNumbersList = new SelectList(GetBankAccountDetails, "AccountNumber", "AccountNumber");
 
             return View(transHistory);
         }
@@ -154,6 +193,13 @@ namespace SEPBankingApp.Controllers
         // GET: /BankAccount/Create
         public ActionResult Create()
         {
+            List<string> BankAccountTypes = new List<string>();
+
+            BankAccountTypes.Add("Saver");
+            BankAccountTypes.Add("Debt");
+
+            ViewBag.BankAccountTypeList = new SelectList(BankAccountTypes);
+            
             return View();
         }
 
@@ -168,6 +214,8 @@ namespace SEPBankingApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                bankaccountmodel.CurrentBalance = 100;
+
                 bankaccountmodel.UserId = User.Identity.GetUserId();
                 db.BankAccounts.Add(bankaccountmodel);
                 db.SaveChanges();

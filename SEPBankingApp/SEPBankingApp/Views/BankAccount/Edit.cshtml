@@ -17,35 +17,35 @@
 
         @Html.HiddenFor(model => model.AccountNumber)
 
-        <div class="from-group">
+        <div class="control-group">
             @Html.LabelFor(model => model.UserName, new { @class = "control-label" })
             <div class="controls">
                 @Html.EditorFor(model => model.UserName)
-                @Html.ValidationMessageFor(model => model.UserName, null, new { @class = "help-block" })
+                @Html.ValidationMessageFor(model => model.UserName, null, new { @class = "help-inline" })
             </div>
         </div>
 
-        <div class="from-group">
+        <div class="control-group">
             @Html.LabelFor(model => model.TransactionHistoryNumber, new { @class = "control-label" })
             <div class="controls">
                 @Html.EditorFor(model => model.TransactionHistoryNumber)
-                @Html.ValidationMessageFor(model => model.TransactionHistoryNumber, null, new { @class = "help-block" })
+                @Html.ValidationMessageFor(model => model.TransactionHistoryNumber, null, new { @class = "help-inline" })
             </div>
         </div>
 
-        <div class="from-group">
+        <div class="control-group">
             @Html.LabelFor(model => model.AccountType, new { @class = "control-label" })
             <div class="controls">
                 @Html.EditorFor(model => model.AccountType)
-                @Html.ValidationMessageFor(model => model.AccountType, null, new { @class = "help-block" })
+                @Html.ValidationMessageFor(model => model.AccountType, null, new { @class = "help-inline" })
             </div>
         </div>
 
-        <div class="from-group">
+        <div class="control-group">
             @Html.LabelFor(model => model.CurrentBalance, new { @class = "control-label" })
             <div class="controls">
                 @Html.EditorFor(model => model.CurrentBalance)
-                @Html.ValidationMessageFor(model => model.CurrentBalance, null, new { @class = "help-block" })
+                @Html.ValidationMessageFor(model => model.CurrentBalance, null, new { @class = "help-inline" })
             </div>
         </div>
 

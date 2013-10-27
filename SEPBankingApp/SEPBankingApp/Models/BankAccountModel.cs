@@ -21,11 +21,10 @@ namespace SEPBankingApp.Models
         [Required]
         public string AccountType { get; set; }
 
-        [Required]
+        //[Required]
         [Display(Name = "Balance")]
         public double CurrentBalance { get; set; }
 
-        public List<TransactionHistory> TransactionHistory { get; set; }
     }
     
     public class TransactionHistory
@@ -33,8 +32,10 @@ namespace SEPBankingApp.Models
         [Key]
         public int TransactionId { get; set; }
         
+        [Display(Name = "Account Number")]
         public int AccountNumber { get; set; }
        
+        [Display(Name = "Account Number")]
         public int DestinationAccountNumber { get; set; }
 
         public DateTime TransactionDateTime { get; set; }

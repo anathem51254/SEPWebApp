@@ -11,6 +11,9 @@ namespace SEPBankingApp
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
                         "~/Scripts/jquery-{version}.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
+                        "~/Scripts/jquery-ui-{version}.js"));
+
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery.validate*"));
 
@@ -26,6 +29,10 @@ namespace SEPBankingApp
                       "~/Content/bootstrap.css",
                       "~/Content/site.css",
                       "~/Content/bootstrap-responsive.css"));
+
+            bundles.Add(new StyleBundle("~/Content/jquerycss").Include(
+                      "~/Content/themes/base/jquery-ui.css",
+                      "~/Content/themes/base/jquery-ui-all.css"));
         }
     }
 }
