@@ -1,0 +1,78 @@
+﻿@model SEPBankingApp.Models.TransactionHistory
+
+@{
+    ViewBag.Title = "MakeTransaction";
+}
+<script>
+
+    $(function () {
+        $("#datepicker").datepicker({ currentText: "Now", dateFormat: "dd/mm/yy" });
+    });
+
+    //$(function () {
+    //    var curDate = $("#datepicker").datepicker().datepicker("getDate");
+    //    $("#datepicker").val(curDate);
+    //});
+
+</script>
+
+<h2>MakeTransaction</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <fieldset class="form-horizontal">
+        <h4>TransactionHistoryItem</h4>
+        <hr />
+        @Html.ValidationSummary(true)
+
+        <div class="form-group">
+            @Html.Label("From Account", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.AccountNumber, (SelectList)ViewBag.BankAccountNumbersList)
+                @*@Html.EditorFor(model => model.AccountNumber)
+            @Html.ValidationMessageFor(model => model.AccountNumber, null, new { @class = "help-inline" })*@
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.Label("To Account", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DestinationAccountNumber)
+                @Html.ValidationMessageFor(model => model.DestinationAccountNumber)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TransactionDateTime, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.TransactionDateTime, new { @id = "datepicker" })
+                @*@Html.EditorFor(model => model.TransactionDateTime)*@
+                @Html.ValidationMessageFor(model => model.TransactionDateTime)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TransactionAmount, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.TransactionAmount)
+                @Html.ValidationMessageFor(model => model.TransactionAmount)
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "TransactionHistory")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

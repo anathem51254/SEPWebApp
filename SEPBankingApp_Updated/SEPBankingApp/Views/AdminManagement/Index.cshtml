@@ -1,0 +1,14 @@
+﻿
+@{
+    ViewBag.Title = "Admin Management";
+}
+
+
+<hgroup class="title">
+    <h1>@ViewBag.Title</h1>
+</hgroup>
+
+<p>
+    @Html.ActionLink("Roles", "Roles", null, new { @class = "btn btn-default" })
+    @Html.ActionLink("Users", "Users", null, new { @class = "btn btn-default" })
+</p>
