@@ -12,6 +12,7 @@ using SEPBankingApp.Models;
 
 namespace SEPBankingApp.Controllers
 {
+    [HandleError]
     [Authorize]
     public class AccountController : Controller
     {
@@ -78,7 +79,7 @@ namespace SEPBankingApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser() { UserName = model.UserName };
+                var user = new ApplicationUser() { UserName = model.UserName, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, PhoneNumber = model.PhoneNumber};
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -115,8 +116,8 @@ namespace SEPBankingApp.Controllers
         }
 
         //
-        // GET: /Account/Manage
-        public ActionResult Manage(ManageMessageId? message)
+        // GET: /Account/ManagePassword
+        public ActionResult ManagePassword(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
@@ -125,19 +126,19 @@ namespace SEPBankingApp.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
             ViewBag.HasLocalPassword = HasPassword();
-            ViewBag.ReturnUrl = Url.Action("Manage");
+            ViewBag.ReturnUrl = Url.Action("ManagePassword");
             return View();
         }
 
         //
-        // POST: /Account/Manage
+        // POST: /Account/ManagePassword
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Manage(ManageUserViewModel model)
+        public async Task<ActionResult> ManagePassword(ManageUserViewModel model)
         {
             bool hasPassword = HasPassword();
             ViewBag.HasLocalPassword = hasPassword;
-            ViewBag.ReturnUrl = Url.Action("Manage");
+            ViewBag.ReturnUrl = Url.Action("ManagePassword");
             if (hasPassword)
             {
                 if (ModelState.IsValid)
@@ -145,7 +146,7 @@ namespace SEPBankingApp.Controllers
                     IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
                     if (result.Succeeded)
                     {
-                        return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
+                        return RedirectToAction("ManagePassword", new { Message = ManageMessageId.ChangePasswordSuccess });
                     }
                     else
                     {
@@ -167,7 +168,7 @@ namespace SEPBankingApp.Controllers
                     IdentityResult result = await UserManager.AddPasswordAsync(User.Identity.GetUserId(), model.NewPassword);
                     if (result.Succeeded)
                     {
-                        return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
+                        return RedirectToAction("ManagePassword", new { Message = ManageMessageId.SetPasswordSuccess });
                     }
                     else
                     {

@@ -6,6 +6,8 @@ namespace SEPBankingApp.Migrations
     using System.Linq;
     using Microsoft.AspNet.Identity;
     using Microsoft.AspNet.Identity.EntityFramework;
+    using System.Collections;
+    using System.Collections.Generic;
 
     internal sealed class Configuration : DbMigrationsConfiguration<SEPBankingApp.Models.ApplicationDbContext>
     {
@@ -16,12 +18,13 @@ namespace SEPBankingApp.Migrations
 
         protected override void Seed(SEPBankingApp.Models.ApplicationDbContext context)
         {
-            //AddRole("GeneralUser");
-            //AddRole("GeneralAdmin");
+            //List<SEPBankingApp.Models.ApplicationUser> peopleDetails = new List<SEPBankingApp.Models.ApplicationUser>();
 
-            AddUserToRole("2b7e6280-65a7-4778-a200-39c1804d0a63", "GeneralAdmin");
+            //peopleDetails.Add(new Models.ApplicationUser() { } );
 
-            //AddUserAndRole();
+            AddGeneralUser();
+
+            AddGeneralAdmin(1, "admin1@example.com", "admin", "admin", 12345678);
 
             //  This method will be called after migrating to the latest version.
 
@@ -35,6 +38,47 @@ namespace SEPBankingApp.Migrations
             //      new Person { FullName = "Rowan Miller" }
             //    );
             //
+        }
+
+        void AddGeneralUser()
+        {
+            string[] firstName = { "John", "Carla", "Bill", "William", "RZA", "GZA", "Iris", "Matt", "Motoko", "David", "Linh"};
+            string[] lastName = { "Smith", "Jackson", "Murray", "Gibson", "WU", "WU", "Wu", "Shaw", "Kusanagi", "Mur", "Tran"};
+            int[] phoneNumber = { 12345678, 12345678, 12345678, 12345678, 12345678, 12345678, 12345678, 12345678, 12345678, 12345678, 12345678 };
+
+            for (int i = 0; i < 10; i++ )
+            {
+                var um = new UserManager<SEPBankingApp.Models.ApplicationUser>(new UserStore<SEPBankingApp.Models.ApplicationUser>(new SEPBankingApp.Models.ApplicationDbContext()));
+
+                var user = new SEPBankingApp.Models.ApplicationUser()
+                {
+                    UserName = "user" + i.ToString(),
+                    Email = "user" + i.ToString() + "@example.com",
+                    FirstName = firstName[i],
+                    LastName = lastName[i],
+                    PhoneNumber = phoneNumber[i],
+                };
+
+                um.Create(user, "password");
+                um.AddToRole(user.Id, "GeneralUser");
+            }
+        }
+
+        void AddGeneralAdmin(int i, string email, string firstName, string lastName, int phoneNumber)
+        {
+            var um = new UserManager<SEPBankingApp.Models.ApplicationUser>(new UserStore<SEPBankingApp.Models.ApplicationUser>(new SEPBankingApp.Models.ApplicationDbContext()));
+
+            var user = new SEPBankingApp.Models.ApplicationUser()
+            {
+                UserName = "admin" + i.ToString(),
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
+                PhoneNumber = phoneNumber,
+            }; 
+            
+            um.Create(user, "password");
+            um.AddToRole(user.Id, "GeneralAdmin");
         }
 
         bool AddUserAndRole()

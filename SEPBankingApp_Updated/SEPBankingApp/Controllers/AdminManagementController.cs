@@ -11,10 +11,11 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using SEPBankingApp.Models;
+using System.Data.Entity;
 
 namespace SEPBankingApp.Controllers
 {
-
+    [HandleError]
     [Authorize(Roles = "GeneralAdmin")]
     public class AdminManagementController : Controller
     {
@@ -44,7 +45,6 @@ namespace SEPBankingApp.Controllers
             return View();
         }
 
-
         #region ROLES
 
         //
@@ -66,7 +66,7 @@ namespace SEPBankingApp.Controllers
         // POST: /AdminManagement/CreateRole
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateRole(RoleManagement roleModel)
+        public ActionResult CreateRole([Bind(Include="Name")] RoleManagement roleModel)
         {
             if(ModelState.IsValid)
             {
@@ -93,13 +93,15 @@ namespace SEPBankingApp.Controllers
         {
             if(id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
             var role = RoleManager.FindById(id);
             if(role == null)
             {
-                return HttpNotFound();
+                return RedirectToAction("Index");
+                //return HttpNotFound();
             }
             return View(role);
         }
@@ -114,7 +116,8 @@ namespace SEPBankingApp.Controllers
             {
                 if(id == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return RedirectToAction("Index");
                 }
 
                 var role = RoleManager.FindById(id);
@@ -149,10 +152,21 @@ namespace SEPBankingApp.Controllers
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             var user = UserManager.FindById(id);
-            return View(user);
+
+            var getbankAccount = from tb in db.BankAccounts
+                              select tb;
+            IQueryable<BankAccount> BankAccounts = getbankAccount.Where(s => s.UserId.Equals(id));
+
+            UserDetailsViewModels userDetails = new UserDetailsViewModels();
+
+            userDetails.AppUser = user;
+            userDetails.BankAccount = BankAccounts;
+
+            return View(userDetails);
         }
 
         //
@@ -213,14 +227,16 @@ namespace SEPBankingApp.Controllers
         {
             if(id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             ViewBag.RoleId = new SelectList(RoleManager.Roles, "Id", "Name");
 
             var user = UserManager.FindById(id);
             if(user == null)
             {
-                return HttpNotFound();
+                //return HttpNotFound();
+                return RedirectToAction("Index");
             }
 
             return View(user);
@@ -234,7 +250,8 @@ namespace SEPBankingApp.Controllers
         {
             if(id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             ViewBag.RoleId = new SelectList(RoleManager.Roles, "Id", "Name");
 
@@ -273,6 +290,37 @@ namespace SEPBankingApp.Controllers
             return View();
         }
 
+        // GET: /AdminManagement/EditUserBankAccount/5
+        public ActionResult EditUserBankAccount(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            BankAccount bankaccount = db.BankAccounts.Find(id);
+            if (bankaccount == null)
+            {
+                //return HttpNotFound();
+                return RedirectToAction("Index");
+            }
+            return View(bankaccount);
+        }
+
+        // POST: /AdminManagement/EditUserBankAccount/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditUserBankAccount([Bind(Include = "AccountNumber,UserId,AccountType,CurrentBalance,BlockAccess")] BankAccount bankaccount)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Entry(bankaccount).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View(bankaccount);
+        }
 
         #endregion
     }

@@ -1,4 +1,7 @@
-﻿@model IEnumerable<SEPBankingApp.Models.TransactionHistory>
+﻿@*@model IEnumerable<SEPBankingApp.Models.TransactionHistory>*@
+@model PagedList.IPagedList<SEPBankingApp.Models.TransactionHistory>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 
 @{
     ViewBag.Title = "TransactionHistory";
@@ -9,26 +12,37 @@
 <p>
     @Html.ActionLink("Make Transaction", "MakeTransaction")
 </p>
+
+@*@using (Html.BeginForm("TransactionHistory", "TransactionHistory", FormMethod.Get))
+{
+    <p>
+        search box code
+    </p>
+}*@
+
 <table class="table">
     <tr>
         @*<th>
                 @Html.DisplayNameFor(model => model.AccountNumber)
             </th>*@
         <th>
-            @Html.DisplayNameFor(model => model.DestinationAccountNumber)
+            @Html.DisplayName("DestinationAccountNumber")
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.TransactionAmount)
+            @Html.DisplayName("TransactionAmount")
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.TransactionDateTime)
+            @Html.DisplayName("TransactionDateTime")
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.PreBalance)
+            @Html.DisplayName("PreBalance")
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.PostBalance)
+            @Html.DisplayName("PostBalance")
+        </th>
+        <th>
+            @Html.DisplayName("Description")
         </th>
     </tr>
     @if (Model != null)
@@ -54,6 +68,9 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.PostBalance)
                 </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
                 @*<td>
                         @Html.ActionLink("Edit", "Edit", new { id=item.TransactionId }) |
                         @Html.ActionLink("Details", "Details", new { id=item.TransactionId }) |
@@ -63,3 +80,7 @@
         }
     }
 </table>
+<br />
+Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+@Html.PagedListPager(Model, page => Url.Action("TransactionHistory", new { page }))

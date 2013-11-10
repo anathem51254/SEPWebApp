@@ -1,4 +1,4 @@
-﻿@model SEPBankingApp.Models.ApplicationUser
+﻿@model SEPBankingApp.Models.UserDetailsViewModels
 
 @{
     ViewBag.Title = "UserDetails";
@@ -11,21 +11,67 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.UserName)
+            @Html.DisplayNameFor(model => model.AppUser.UserName)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.UserName)
+            @Html.DisplayFor(model => model.AppUser.UserName)
         </dd>
     </dl>
 </div>
+<h4>Bank Accounts</h4>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("AccountNumber")
+        </th>
+        <th>
+            @Html.DisplayName("UserId")
+        </th>
+        <th>
+            @Html.DisplayName("AccountType")
+        </th>
+        <th>
+            @Html.DisplayName("CurrentBalance")
+        </th>
+        <th>
+            @Html.DisplayName("BlockAccess")
+        </th>
+    </tr>
+    
+    @foreach (var item in Model.BankAccount)
+    {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.AccountNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UserId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AccountType)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CurrentBalance)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BlockAccess)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "EditUserBankAccount", new { id = item.AccountNumber })
+        </td>
+    </tr>
+    }
+</table>
+
 <h4>List Of Roles</h4>
 <table class="table table-striped">
 
-    @foreach (var item in Model.Roles)
+    @foreach (var item in Model.AppUser.Roles)
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Id) @*need to fix this*@
+                @Html.DisplayFor(modelItem => item) @*need to fix this*@
             </td>
         </tr>
     }
@@ -34,7 +80,7 @@
 <h4>List Of Logins</h4>
 <table class="table table-striped">
 
-    @foreach (var item in Model.Logins)
+    @foreach (var item in Model.AppUser.Logins)
     {
         <tr>
             <td>
@@ -46,6 +92,6 @@
 </table>
 
 <p>
-    @Html.ActionLink("Edit", "EditUser", new { id = Model.Id }) |
+    @Html.ActionLink("Edit", "EditUser", new { id = Model.AppUser.Id }) |
     @Html.ActionLink("Back to List", "Users")
 </p>

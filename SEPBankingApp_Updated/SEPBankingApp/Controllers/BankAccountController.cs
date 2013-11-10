@@ -9,9 +9,11 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using SEPBankingApp.Models;
 using System.Diagnostics;
+using PagedList;
 
 namespace SEPBankingApp.Controllers
 {
+    [HandleError]
     [Authorize]
     public class BankAccountController : Controller
     {
@@ -43,16 +45,50 @@ namespace SEPBankingApp.Controllers
             BankAccount bankaccount = db.BankAccounts.Find(id);
             if (bankaccount == null)
             {
-                return HttpNotFound();
+                //return HttpNotFound(); 
+                return RedirectToAction("Index");
             }
+
+            if(bankaccount.BlockAccess)
+            {
+                return RedirectToAction("Index");
+            }
+
             return View(bankaccount);
         }
 
+        /// Bug in this section of code due to CurrentBankAccount not setting properly
         // GET: /BankAccount/TransactionHistory/5
-        public ActionResult TransactionHistory(int? id)
+        public ActionResult TransactionHistory(int? id, int? page)
         {
+            string userid = User.Identity.GetUserId();
+
+            var getBankAccountDetails = from tb in db.BankAccounts
+                                     where tb.AccountNumber == id && tb.UserId == userid
+                                     select tb;
+
+            if(getBankAccountDetails.Count() < 1)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (page == null)
+                page = 1;
+
             if (id == null)
             {
+                var BankAccountDetails = from tb in db.BankAccounts
+                                         where tb.AccountNumber == CurrentBankAccount
+                                         select tb;
+
+                if(BankAccountDetails.Count() > 0)
+                {
+                    if (BankAccountDetails.First().BlockAccess)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                }
+
                 var transHistory = from tb in db.TransactionHistorys
                                    where tb.AccountNumber == CurrentBankAccount
                                    select tb;
@@ -63,10 +99,27 @@ namespace SEPBankingApp.Controllers
                     //return HttpNotFound();
                 }
 
-                return View(transHistory);
+                IOrderedQueryable<TransactionHistory> OrderedTransHistory = transHistory.OrderBy(s => s.AccountNumber);
+
+                int pageSize = 20;
+                int pageNumber = (page ?? 1);
+                return View(OrderedTransHistory.ToPagedList(pageNumber, pageSize));
             }
             else if (id != null && CurrentBankAccount == 0)
             {
+                var BankAccountDetails = from tb in db.BankAccounts
+                                         where tb.AccountNumber == id
+                                         select tb;
+
+                if (BankAccountDetails.Count() > 0)
+                {
+                    if (BankAccountDetails.First().BlockAccess)
+                    {
+                        ModelState.AddModelError("", "Access to this Account is Currently Blocked!");
+                        return RedirectToAction("Index");
+                    }
+                }
+
                 var transHistory = from tb in db.TransactionHistorys
                                    where tb.AccountNumber == id
                                    select tb;
@@ -79,12 +132,16 @@ namespace SEPBankingApp.Controllers
 
                 CurrentBankAccount = (int)id;
 
-                return View(transHistory);
+                IOrderedQueryable<TransactionHistory> OrderedTransHistory = transHistory.OrderBy(s => s.AccountNumber);
+
+                int pageSize = 20;
+                int pageNumber = (page ?? 1);
+                return View(OrderedTransHistory.ToPagedList(pageNumber, pageSize));
             }
             else //if (id == null && CurrentBankAccount == 0)
             {
                 //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-                return HttpNotFound();
+                return RedirectToAction("Index");
             }
         }
 
@@ -95,7 +152,7 @@ namespace SEPBankingApp.Controllers
                                      select tb;
 
             string userid = User.Identity.GetUserId();
-            BankAccountDetails = BankAccountDetails.Where(s => s.UserId.Equals(userid));
+            BankAccountDetails = BankAccountDetails.Where(s => s.UserId.Equals(userid)).Where(s => s.BlockAccess.Equals(false));
 
             ViewBag.BankAccountNumbersList = new SelectList(BankAccountDetails, "AccountNumber", "AccountNumber");
 
@@ -113,7 +170,7 @@ namespace SEPBankingApp.Controllers
         // Example: public ActionResult Update([Bind(Include="ExampleProperty1,ExampleProperty2")] Model model)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult MakeTransaction(TransactionHistory transHistory)
+        public ActionResult MakeTransaction([Bind(Include="AccountNumber,DestinationAccountNumber,TransactionDateTime,TransactionAmount,Description")] TransactionHistory transHistory)
         {
             if (ModelState.IsValid)
             {
@@ -128,53 +185,22 @@ namespace SEPBankingApp.Controllers
                 BankAccount AccToWithdraw = AccountsToWithdraw.FirstOrDefault();
                 BankAccount AccToDeposit = AccountsToDeposit.FirstOrDefault();
 
-                if (AccToWithdraw == null || AccToDeposit == null)
+                if (AccToWithdraw == null || AccToDeposit == null || AccToWithdraw.BlockAccess == true || AccToWithdraw.CurrentBalance <= transHistory.TransactionAmount)
                 {
-                    var BankAccountDetails = from tb in db.BankAccounts
-                                             select tb;
+                    if(AccToWithdraw.BlockAccess == true)
+                    {
+                        return View(HandleExceptionMakeTransaction(transHistory, "Access to this Account is Blocked!"));
+                    }
 
-                    string userid = User.Identity.GetUserId();
-                    BankAccountDetails = BankAccountDetails.Where(s => s.UserId.Equals(userid));
+                    if (AccToWithdraw.CurrentBalance <= transHistory.TransactionAmount)
+                    {
+                        return View(HandleExceptionMakeTransaction(transHistory, "There is not enough money in this Account!"));
+                    }
 
-                    ViewBag.BankAccountNumbersList = new SelectList(BankAccountDetails, "AccountNumber", "AccountNumber");
-
-                    return View(transHistory);
+                    return View(HandleExceptionMakeTransaction(transHistory, "Invalid Account is Selected!"));
                 }
 
-                TransactionHistory AccHistory = new Models.TransactionHistory();
-
-                AccHistory.AccountNumber = transHistory.DestinationAccountNumber;
-                AccHistory.DestinationAccountNumber = transHistory.AccountNumber;
-                AccHistory.TransactionAmount = transHistory.TransactionAmount;
-                AccHistory.TransactionDateTime = transHistory.TransactionDateTime;
-                AccHistory.PreBalance = AccToDeposit.CurrentBalance;
-
-                transHistory.PreBalance = AccToWithdraw.CurrentBalance;
-                Debug.WriteLine("Withdraw Acc Pre Balance: " + AccToWithdraw.CurrentBalance.ToString());
-
-                Debug.WriteLine("Deposit Acc Pre Balance: " + AccToDeposit.CurrentBalance.ToString());
-
-                AccToWithdraw.CurrentBalance -= transHistory.TransactionAmount;
-                Debug.WriteLine("Withdraw Acc Post Balance: " + AccToWithdraw.CurrentBalance.ToString());
-
-                AccToDeposit.CurrentBalance += transHistory.TransactionAmount;
-                Debug.WriteLine("Deposit Acc Post Balance: " + AccToDeposit.CurrentBalance.ToString());
-
-                AccHistory.PostBalance = AccToDeposit.CurrentBalance;
-
-                transHistory.PostBalance = AccToWithdraw.CurrentBalance;
-
-                db.Entry(AccToWithdraw).State = EntityState.Modified;
-                db.SaveChanges();
-
-                db.Entry(AccToDeposit).State = EntityState.Modified;
-                db.SaveChanges();
-
-                db.TransactionHistorys.Add(AccHistory);
-                db.SaveChanges();
-
-                db.TransactionHistorys.Add(transHistory);
-                db.SaveChanges();
+                ProcessMakeTransaction(transHistory, AccToDeposit, AccToWithdraw);
 
                 return RedirectToAction("TransactionHistory", new { id = transHistory.AccountNumber });
             }
@@ -183,13 +209,12 @@ namespace SEPBankingApp.Controllers
                                         select tb;
 
             string Getuserid = User.Identity.GetUserId();
-            GetBankAccountDetails = GetBankAccountDetails.Where(s => s.UserId.Equals(Getuserid));
+            GetBankAccountDetails = GetBankAccountDetails.Where(s => s.UserId.Equals(Getuserid)).Where(s => s.BlockAccess.Equals(false));
 
             ViewBag.BankAccountNumbersList = new SelectList(GetBankAccountDetails, "AccountNumber", "AccountNumber");
 
             return View(transHistory);
         }
-
 
         // GET: /BankAccount/Create
         public ActionResult Create()
@@ -214,6 +239,7 @@ namespace SEPBankingApp.Controllers
             if (ModelState.IsValid)
             {
                 bankaccount.CurrentBalance = 100;
+                bankaccount.BlockAccess = false;
 
                 bankaccount.UserId = User.Identity.GetUserId();
 
@@ -225,48 +251,50 @@ namespace SEPBankingApp.Controllers
             return View(bankaccount);
         }
 
-        // GET: /BankAccount/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            BankAccount bankaccount = db.BankAccounts.Find(id);
-            if (bankaccount == null)
-            {
-                return HttpNotFound();
-            }
-            return View(bankaccount);
-        }
+        //// GET: /BankAccount/Edit/5
+        //public ActionResult Edit(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    }
+        //    BankAccount bankaccount = db.BankAccounts.Find(id);
+        //    if (bankaccount == null)
+        //    {
+        //        return HttpNotFound();
+        //    }
+        //    return View(bankaccount);
+        //}
 
-        // POST: /BankAccount/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include="AccountNumber,UserId,AccountType,CurrentBalance")] BankAccount bankaccount)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(bankaccount).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(bankaccount);
-        }
+        //// POST: /BankAccount/Edit/5
+        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public ActionResult Edit([Bind(Include="AccountNumber,UserId,AccountType,CurrentBalance")] BankAccount bankaccount)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        db.Entry(bankaccount).State = EntityState.Modified;
+        //        db.SaveChanges();
+        //        return RedirectToAction("Index");
+        //    }
+        //    return View(bankaccount);
+        //}
 
         // GET: /BankAccount/Delete/5
         public ActionResult Delete(int? id)
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             BankAccount bankaccount = db.BankAccounts.Find(id);
             if (bankaccount == null)
             {
-                return HttpNotFound();
+                //return HttpNotFound();
+                return RedirectToAction("Index");
             }
             return View(bankaccount);
         }
@@ -290,5 +318,63 @@ namespace SEPBankingApp.Controllers
             }
             base.Dispose(disposing);
         }
+
+        #region TRANSACTION HELPERS
+
+        protected TransactionHistory HandleExceptionMakeTransaction(TransactionHistory transHistory, string exceptionMsg)
+        {
+            ModelState.AddModelError("", exceptionMsg);
+
+            var BankAccountDetails = from tb in db.BankAccounts
+                                     select tb;
+
+            string userid = User.Identity.GetUserId();
+            BankAccountDetails = BankAccountDetails.Where(s => s.UserId.Equals(userid)).Where(s => s.BlockAccess.Equals(false));
+
+            ViewBag.BankAccountNumbersList = new SelectList(BankAccountDetails, "AccountNumber", "AccountNumber");
+
+            return transHistory;
+        }
+
+        protected void ProcessMakeTransaction(TransactionHistory transHistory, BankAccount AccToDeposit, BankAccount AccToWithdraw)
+        {
+            TransactionHistory AccHistory = new Models.TransactionHistory();
+
+            AccHistory.AccountNumber = transHistory.DestinationAccountNumber;
+            AccHistory.DestinationAccountNumber = transHistory.AccountNumber;
+            AccHistory.TransactionAmount = transHistory.TransactionAmount;
+            AccHistory.TransactionDateTime = transHistory.TransactionDateTime;
+            AccHistory.PreBalance = AccToDeposit.CurrentBalance;
+            AccHistory.Description = transHistory.Description;
+
+            transHistory.PreBalance = AccToWithdraw.CurrentBalance;
+            Debug.WriteLine("Withdraw Acc Pre Balance: " + AccToWithdraw.CurrentBalance.ToString());
+
+            Debug.WriteLine("Deposit Acc Pre Balance: " + AccToDeposit.CurrentBalance.ToString());
+
+            AccToWithdraw.CurrentBalance -= transHistory.TransactionAmount;
+            Debug.WriteLine("Withdraw Acc Post Balance: " + AccToWithdraw.CurrentBalance.ToString());
+
+            AccToDeposit.CurrentBalance += transHistory.TransactionAmount;
+            Debug.WriteLine("Deposit Acc Post Balance: " + AccToDeposit.CurrentBalance.ToString());
+
+            AccHistory.PostBalance = AccToDeposit.CurrentBalance;
+
+            transHistory.PostBalance = AccToWithdraw.CurrentBalance;
+
+            db.Entry(AccToWithdraw).State = EntityState.Modified;
+            db.SaveChanges();
+
+            db.Entry(AccToDeposit).State = EntityState.Modified;
+            db.SaveChanges();
+
+            db.TransactionHistorys.Add(AccHistory);
+            db.SaveChanges();
+
+            db.TransactionHistorys.Add(transHistory);
+            db.SaveChanges();
+        }
+
+        #endregion
     }
 }

@@ -28,6 +28,27 @@ namespace SEPBankingApp.Models
         public string ConfirmPassword { get; set; }
     }
 
+    public class ManageAccountViewModel
+    {
+        [StringLength(32)]
+        [DataType(DataType.Text)]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [StringLength(32)]
+        [DataType(DataType.Text)]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [DataType(DataType.PhoneNumber)]
+        [Display(Name = "Phone Number")]
+        public int PhoneNumber { get; set; }
+
+        [StringLength(32)]
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; }
+    }
+
     public class LoginViewModel
     {
         [Required]
@@ -59,5 +80,22 @@ namespace SEPBankingApp.Models
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Required]
+        [DataType(DataType.PhoneNumber)]
+        [Display(Name = "Phone Number")]
+        public int PhoneNumber { get; set; }
+
+        [Required]
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; }
     }
 }

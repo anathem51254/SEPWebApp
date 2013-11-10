@@ -26,6 +26,8 @@ namespace SEPBankingApp.Models
         [Display(Name = "Balance")]
         public double CurrentBalance { get; set; }
 
+        public bool BlockAccess { get; set; }
+
     }
 
     public class TransactionHistory
@@ -46,6 +48,8 @@ namespace SEPBankingApp.Models
         public double PreBalance { get; set; }
 
         public double PostBalance { get; set; }
+
+        public string Description { get; set; }
 
     }
 }

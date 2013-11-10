@@ -13,7 +13,6 @@ namespace SEPBankingApp
     {
         protected void Application_Start()
         {
-
             Database.SetInitializer<SEPBankingApp.Models.ApplicationDbContext>(null);
 
             AreaRegistration.RegisterAllAreas();
