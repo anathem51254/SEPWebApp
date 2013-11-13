@@ -9,5 +9,6 @@ namespace SEPBankingApp.Models
     {
         public ApplicationUser AppUser;
         public IQueryable<BankAccount> BankAccount;
+        public IList<string> Roles;
     }
 }

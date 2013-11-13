@@ -159,12 +159,16 @@ namespace SEPBankingApp.Controllers
 
             var getbankAccount = from tb in db.BankAccounts
                               select tb;
+
             IQueryable<BankAccount> BankAccounts = getbankAccount.Where(s => s.UserId.Equals(id));
+
+            var userRoles = UserManager.GetRoles(user.Id);
 
             UserDetailsViewModels userDetails = new UserDetailsViewModels();
 
             userDetails.AppUser = user;
             userDetails.BankAccount = BankAccounts;
+            userDetails.Roles = userRoles;
 
             return View(userDetails);
         }
@@ -320,6 +324,60 @@ namespace SEPBankingApp.Controllers
                 return RedirectToAction("Index");
             }
             return View(bankaccount);
+        }
+
+        // GET: /AdminManagement/DeleteUser/5
+        public ActionResult DeleteUser(string id)
+        {
+            if (id == null)
+            {
+                //return RedirectToAction("Index");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var user = db.Users.Find(id);
+            if (user == null)
+            {
+                return HttpNotFound();
+                //return RedirectToAction("Index");
+            }
+            return View(user);
+        }
+
+        [HttpPost, ActionName("DeleteUser")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteUserConfirmed(string id)
+        {
+            if (ModelState.IsValid)
+            {
+                if (id == null)
+                {
+                    return View();
+                }
+
+                var user = db.Users.Find(id);
+
+                //var logins = user.Logins;
+                //foreach(var login in logins)
+                //{
+                //    db.UserLogins.Remove(login);
+                //}
+
+                var rolesForUser = UserManager.GetRoles(user.Id);
+
+                if (rolesForUser.Count() > 0)
+                {
+                    foreach (var item in rolesForUser)
+                    {
+                        var result = UserManager.RemoveFromRole(user.Id, item);
+                    }
+                }
+
+                db.Users.Remove(user);
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            else
+                return View();
         }
 
         #endregion

@@ -101,7 +101,7 @@ namespace SEPBankingApp.Controllers
 
                 IOrderedQueryable<TransactionHistory> OrderedTransHistory = transHistory.OrderBy(s => s.AccountNumber);
 
-                int pageSize = 20;
+                int pageSize = 10;
                 int pageNumber = (page ?? 1);
                 return View(OrderedTransHistory.ToPagedList(pageNumber, pageSize));
             }
@@ -134,7 +134,7 @@ namespace SEPBankingApp.Controllers
 
                 IOrderedQueryable<TransactionHistory> OrderedTransHistory = transHistory.OrderBy(s => s.AccountNumber);
 
-                int pageSize = 20;
+                int pageSize = 10;
                 int pageNumber = (page ?? 1);
                 return View(OrderedTransHistory.ToPagedList(pageNumber, pageSize));
             }
@@ -185,14 +185,14 @@ namespace SEPBankingApp.Controllers
                 BankAccount AccToWithdraw = AccountsToWithdraw.FirstOrDefault();
                 BankAccount AccToDeposit = AccountsToDeposit.FirstOrDefault();
 
-                if (AccToWithdraw == null || AccToDeposit == null || AccToWithdraw.BlockAccess == true || AccToWithdraw.CurrentBalance <= transHistory.TransactionAmount)
+                if (AccToWithdraw == null || AccToDeposit == null || AccToWithdraw.BlockAccess == true || AccToWithdraw.CurrentBalance <= transHistory.TransactionAmount || transHistory.TransactionAmount <= 0)
                 {
                     if(AccToWithdraw.BlockAccess == true)
                     {
                         return View(HandleExceptionMakeTransaction(transHistory, "Access to this Account is Blocked!"));
                     }
 
-                    if (AccToWithdraw.CurrentBalance <= transHistory.TransactionAmount)
+                    if (AccToWithdraw.CurrentBalance <= transHistory.TransactionAmount || transHistory.TransactionAmount <= 0)
                     {
                         return View(HandleExceptionMakeTransaction(transHistory, "There is not enough money in this Account!"));
                     }
@@ -202,6 +202,9 @@ namespace SEPBankingApp.Controllers
 
                 ProcessMakeTransaction(transHistory, AccToDeposit, AccToWithdraw);
 
+
+                db.TransactionHistorys.Add(transHistory);
+                db.SaveChanges();
                 return RedirectToAction("TransactionHistory", new { id = transHistory.AccountNumber });
             }
 
@@ -222,7 +225,7 @@ namespace SEPBankingApp.Controllers
             List<string> BankAccountTypes = new List<string>();
 
             BankAccountTypes.Add("Saver");
-            BankAccountTypes.Add("Debt");
+            BankAccountTypes.Add("Access");
 
             ViewBag.BankAccountTypeList = new SelectList(BankAccountTypes);
 
@@ -282,6 +285,10 @@ namespace SEPBankingApp.Controllers
         //    return View(bankaccount);
         //}
 
+
+
+
+        //
         // GET: /BankAccount/Delete/5
         public ActionResult Delete(int? id)
         {
@@ -343,7 +350,8 @@ namespace SEPBankingApp.Controllers
             AccHistory.AccountNumber = transHistory.DestinationAccountNumber;
             AccHistory.DestinationAccountNumber = transHistory.AccountNumber;
             AccHistory.TransactionAmount = transHistory.TransactionAmount;
-            AccHistory.TransactionDateTime = transHistory.TransactionDateTime;
+            //AccHistory.TransactionDateTime = transHistory.TransactionDateTime;
+            AccHistory.TransactionDateTime = DateTime.Today.Date;
             AccHistory.PreBalance = AccToDeposit.CurrentBalance;
             AccHistory.Description = transHistory.Description;
 
@@ -362,6 +370,8 @@ namespace SEPBankingApp.Controllers
 
             transHistory.PostBalance = AccToWithdraw.CurrentBalance;
 
+            transHistory.TransactionDateTime = DateTime.Today.Date;
+
             db.Entry(AccToWithdraw).State = EntityState.Modified;
             db.SaveChanges();
 
@@ -371,8 +381,8 @@ namespace SEPBankingApp.Controllers
             db.TransactionHistorys.Add(AccHistory);
             db.SaveChanges();
 
-            db.TransactionHistorys.Add(transHistory);
-            db.SaveChanges();
+            //db.TransactionHistorys.Add(transHistory);
+            //db.SaveChanges();
         }
 
         #endregion

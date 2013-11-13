@@ -4,10 +4,9 @@
     ViewBag.Title = "UserDetails";
 }
 
-<h2>UserDetails</h2>
+<h2>User Details</h2>
 
 <div>
-    <h4>User</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
@@ -17,6 +16,7 @@
             @Html.DisplayFor(model => model.AppUser.UserName)
         </dd>
     </dl>
+    <hr />
 </div>
 <h4>Bank Accounts</h4>
 
@@ -67,7 +67,7 @@
 <h4>List Of Roles</h4>
 <table class="table table-striped">
 
-    @foreach (var item in Model.AppUser.Roles)
+    @foreach (var item in Model.Roles)
     {
         <tr>
             <td>
@@ -77,7 +77,7 @@
     }
 </table>
 
-<h4>List Of Logins</h4>
+@*<h4>List Of Logins</h4>
 <table class="table table-striped">
 
     @foreach (var item in Model.AppUser.Logins)
@@ -89,9 +89,10 @@
         </tr>
     }
 
-</table>
+</table>*@
 
 <p>
     @Html.ActionLink("Edit", "EditUser", new { id = Model.AppUser.Id }) |
+    @Html.ActionLink("Delete", "DeleteUser", new { id = Model.AppUser.Id }) |
     @Html.ActionLink("Back to List", "Users")
 </p>

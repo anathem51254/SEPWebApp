@@ -9,11 +9,6 @@
         $("#datepicker").datepicker({ currentText: "Now", dateFormat: "dd/mm/yy" });
     });
 
-    //$(function () {
-    //    var curDate = $("#datepicker").datepicker().datepicker("getDate");
-    //    $("#datepicker").val(curDate);
-    //});
-
 </script>
 
 <h2>MakeTransaction</h2>
@@ -22,7 +17,7 @@
 {
     @Html.AntiForgeryToken()
 
-    <fieldset class="form-horizontal">
+    <div class="form-horizontal">
         <h4>TransactionHistoryItem</h4>
         <hr />
         @Html.ValidationSummary(true)
@@ -44,14 +39,14 @@
             </div>
         </div>
 
-        <div class="form-group">
+        @*<div class="form-group">
             @Html.LabelFor(model => model.TransactionDateTime, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.TextBoxFor(model => model.TransactionDateTime, new { @id = "datepicker" })
-                @*@Html.EditorFor(model => model.TransactionDateTime)*@
+                @Html.EditorFor(model => model.TransactionDateTime)
                 @Html.ValidationMessageFor(model => model.TransactionDateTime)
             </div>
-        </div>
+        </div>*@
 
         <div class="form-group">
             @Html.LabelFor(model => model.TransactionAmount, new { @class = "control-label col-md-2" })
@@ -75,7 +70,7 @@
                 <input type="submit" value="Create" class="btn btn-default" />
             </div>
         </div>
-    </fieldset>
+    </div>
 }
 
 <div>

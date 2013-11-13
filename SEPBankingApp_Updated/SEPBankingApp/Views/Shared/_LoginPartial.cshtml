@@ -5,14 +5,20 @@
     {
     @Html.AntiForgeryToken()
     <ul class="nav navbar-nav">
-            @*<li>@Html.ActionLink("Home", "Index", "Home")</li>*@
-            <li>@Html.ActionLink("Bank Accounts", "Index", "BankAccount")</li>
-            @*<li>@Html.ActionLink("About", "About", "Home")</li>
-            <li>@Html.ActionLink("Contact", "Contact", "Home")</li>*@
+        @{
+            if (User.IsInRole("GeneralAdmin"))
+            {
+                <li>@Html.ActionLink("Admin Management", "Index", "AdminManagement")</li>
+            }
+            else
+            { 
+                <li>@Html.ActionLink("Bank Accounts", "Index", "BankAccount")</li>
+            }
+        }
     </ul>
     <ul class="nav navbar-nav navbar-right">
         <li>
-            @Html.ActionLink("Manage Account", "ManageAccount", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })
+            @Html.ActionLink("Manage Account", "ManageAccount", "Account")
         </li>
         <li>
             @Html.ActionLink("Change Password", "ManagePassword", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })

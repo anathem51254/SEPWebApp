@@ -97,6 +97,56 @@ namespace SEPBankingApp.Controllers
         }
 
         //
+        // GET: /Account/ManageAccount/1
+        public ActionResult ManageAccount()
+        {
+            var id = User.Identity.GetUserId();
+            var user = UserManager.FindById(id);
+
+            if (id == null)
+            {
+                return View(user);
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            if (user == null)
+            {
+                //return HttpNotFound();
+                //return RedirectToAction("Index");
+                return View(user);
+            }
+
+            return View(user);
+        }
+
+        //
+        // POST: /Account/ManageAccount/1
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ManageAccount([Bind(Include = "UserName,Email,FirstName,LastName")] ApplicationUser formuser)
+        {
+            var id = User.Identity.GetUserId();
+            var user = UserManager.FindById(id);
+
+            if (id == null)
+            {
+                //return RedirectToAction("Index");
+                //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return View(user);
+            }
+
+            user.UserName = formuser.UserName;
+
+            if (ModelState.IsValid)
+            {
+                UserManager.Update(user);
+                //return RedirectToAction("Index");
+                return View(user);
+            }
+            return View();
+        }
+
+        //
         // POST: /Account/Disassociate
         [HttpPost]
         [ValidateAntiForgeryToken]

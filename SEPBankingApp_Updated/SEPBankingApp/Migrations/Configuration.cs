@@ -22,9 +22,11 @@ namespace SEPBankingApp.Migrations
 
             //peopleDetails.Add(new Models.ApplicationUser() { } );
 
-            AddGeneralUser();
+            //AddBankAccountToUser();
 
-            AddGeneralAdmin(1, "admin1@example.com", "admin", "admin", 12345678);
+            //AddGeneralUser();
+
+            //AddGeneralAdmin(1, "admin1@example.com", "admin", "admin", 12345678);
 
             //  This method will be called after migrating to the latest version.
 
@@ -62,6 +64,49 @@ namespace SEPBankingApp.Migrations
                 um.Create(user, "password");
                 um.AddToRole(user.Id, "GeneralUser");
             }
+        }
+
+        void AddBankAccountToUser()
+        {
+            SEPBankingApp.Models.ApplicationDbContext db = new SEPBankingApp.Models.ApplicationDbContext();
+            var Users = from tb in db.Users
+                        select tb;
+                        
+            foreach(var user in Users)
+            {
+                SEPBankingApp.Models.BankAccount BankAccountSaver = new Models.BankAccount();
+
+                BankAccountSaver.AccountType = "Saver";
+
+                BankAccountSaver.BlockAccess = false;
+
+                BankAccountSaver.CurrentBalance = 5000;
+
+                BankAccountSaver.UserId = user.Id;
+
+                db.BankAccounts.Add(BankAccountSaver);
+                db.SaveChanges();
+
+                SEPBankingApp.Models.BankAccount BankAccountAccess = new Models.BankAccount();
+
+                BankAccountAccess.AccountType = "Access";
+
+                BankAccountAccess.BlockAccess = false;
+
+                BankAccountAccess.CurrentBalance = 5000;
+
+                BankAccountAccess.UserId = user.Id;
+
+                db.BankAccounts.Add(BankAccountAccess);
+                db.SaveChanges();
+            }
+
+        }
+
+        void AddTransactionHistory()
+        {
+
+            
         }
 
         void AddGeneralAdmin(int i, string email, string firstName, string lastName, int phoneNumber)
